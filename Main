@@ -1,0 +1,420 @@
+// The "CPT" class.
+import java.awt.*;
+import hsa.Console;
+//SEAN K CPT
+//Last Modified June 14 2020
+//Roulette game
+public class CPT
+{
+    static Console c;           // The output console
+    
+    public static void main (String[] args) throws InterruptedException
+    {
+        c = new Console ();
+        
+        //defining variables here so they initiate while loops
+        int counter = 0;
+        String answer;
+        double budget = -1;
+        
+        
+        //asks user if they want to see a tutorial
+        c.print("Welcome to roulette, would you like to see a tutorial? ");
+        String tutorial = c.readString();        
+       
+        //brings in tutorial method if answer is yes
+        if (tutorial.equalsIgnoreCase("yes")|| tutorial.equalsIgnoreCase("y")){        
+            tutorial();
+        }
+
+        
+        //if user inputs a negative budget, the program keeps asking them to enter a proper budget
+        while (budget <= 0){
+                c.print("Enter your budget to begin ");
+                budget = c.readDouble();
+                }
+        
+        //main while loop, ends when user runs out of money
+        while (budget > 0){
+        
+             //prints "a round" on the first round and "another round" after that
+             if (counter ==0){
+                c.print("Would you like to play a round? ");
+                answer = c.readString();        
+                }
+        
+             else{
+               c.print("Would you like to play another round? ");
+               answer = c.readString();
+               }
+        
+            answer = answer.toLowerCase();
+            
+            
+            //ends game if user says no to playing another round
+            if (answer.equals("no") || answer.equals("No") || answer.equals("n")){       
+                c.println("Thank you for playing, you have played : " + counter + " rounds.");
+                c.println("Your ending budget is: $" + budget );
+                break;
+            }
+            
+            //asks user what type of bet they wish to make
+            c.println("Press 1 to bet on colours");
+            c.println("Press 2 to bet on even/odd");
+            c.println("Press 3 to bet on individual numbers");
+            c.print("Enter choice: ");
+            int choice = c.readInt();
+            
+            //asks user for how much money they want to bet
+            c.print("How much money would you like to play this round? ");
+            double moneyPlayed = c.readDouble();
+        
+            //prevents user from playing an invalid amount of money
+            while (moneyPlayed <= 0 || moneyPlayed > budget){
+                c.println("You cannot bet this amount of money, please enter a new amount");
+                c.print("How much money would you like to play this round? ");
+                moneyPlayed = c.readDouble();
+        
+                }
+        
+            //asks user for what colour they want to bet on, then spins and checks if they have won.
+            if (choice == 1){
+                c.print("What colour, red(x2), black (x2), green (x14) ");
+                String colour = c.readString();
+                colour = colour.toLowerCase();
+            
+                //plays spinning animation and spins for a random number
+                spinnerAnimation();
+                int spin = spinner();
+            
+                //this method returns true if the user wins
+                boolean validity = winOrLoss(colour, spin);
+            
+                //this method changes the budget based on if the user wins or loses
+                budget = validityCheckerForColourBets(validity, colour , moneyPlayed, budget);         
+                }
+        
+            
+            //allows the user to bet on even or odd numbers, methods are almost the same as choice 1
+            if (choice ==2){
+                c.print("Even or Odd? ");
+                String evenOddString = c.readString();
+                evenOddString = evenOddString.toLowerCase();
+        
+                spinnerAnimation();        
+                int spin = spinner();
+            
+                boolean validity = evenOdd(spin, evenOddString);    
+        
+                budget = validityCheckerForEvenOdd(validity, evenOddString, moneyPlayed, budget);        
+        
+                }
+            
+            //allows the user to bet on individual numbers
+            if (choice ==3){
+                int numberPicked = -1;
+             
+                while (numberPicked < 0 || numberPicked >=37){
+                c.print("What number would you like to bet on?");
+                numberPicked = c.readInt();
+                }
+        
+                spinnerAnimation();
+        
+                int spin = spinner();
+        
+                boolean validity = individualNumberBet(spin, numberPicked);
+        
+                budget = individualNumberBetValidityChecker(validity, budget, moneyPlayed);
+            
+                }
+        
+       //prints budget at the end of the round
+       c.print("Your budget is : $ " );
+       c.println (budget,5,2);      
+       c.println("-----------------------------------------------------------------------------");
+         
+       
+       counter = counter + 1;
+       }
+       
+       //ends the game after user runs out of money
+       if (budget <= 0 ){
+             c.print(" You are out of money, thanks for playing");
+       }
+        
+        
+        
+        // Place your program here.  'c' is the output console
+    } // main method
+    
+    //generates a random number for the game
+    public static int spinner(){
+         int spin = (int)(Math.random()*((37-0)+1))+0;
+         
+         //in roulette there is a 00 number but i cant get 00 from the spinner so i made 37 = 00
+         if(spin == 37){
+         c.print(" The spinner landed on 00 ");
+         }
+    
+    else{
+         c.print("The spinner landed on: " + spin + " ");
+    }
+    return spin;
+    }
+    
+    
+    
+    //uses arrays to check if the user picked the right colour. returns true if they got it right.
+    public static boolean winOrLoss(String colour, int spin){
+    int[] red = {1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36};
+    int[] black = {2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35};
+    int[] green = {0,37};
+    int temp = 0;
+    
+    if( colour.equals("red")){
+        for (int i = 0; i < red.length; i++){
+            if (red[i] == spin){ 
+            temp = 1;
+            }        
+        }
+     }   
+    if (colour.equals("black")){
+        for (int i = 0; i < black.length; i++){
+            if (black[i] == spin){
+            temp =1;
+                }        
+            }
+        }
+    if (colour.equals("green")){
+        for (int i = 0; i < green.length; i++){
+            if (green[i] == spin){  
+            temp = 1;
+                }        
+            }
+        }
+    
+    //these 3 for loops print the color the spinner landed on
+    for (int i = 0; i < red.length; i++){
+            if (red[i] == spin){ 
+            c.println("(Red)");
+            }
+          }  
+   for (int i = 0; i < black.length; i++){
+            if (black[i] == spin){
+            c.println("(Black)");
+            }
+           } 
+   for (int i = 0; i < green.length; i++){
+            if (green[i] == spin){
+            c.println("(Green)");
+            }
+          }
+     
+    //returns boolean
+    if (temp ==1){
+    return true;}
+    
+    else{ return false;}
+ 
+    }
+    
+    
+    //returns true if the user picked the right option. 0 and 00 do not count for even or odd in real roulette
+    public static boolean evenOdd(int spin, String evenOddString){
+    int [] even = {2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36};
+    int [] odd = {1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35};
+    int none = 0;
+    int temp =0;
+    
+    if( evenOddString.equals("even")){
+        for (int i = 0; i < even.length; i++){
+            if (even[i] == spin){ 
+            temp = 1;
+            }        
+        }
+    }
+     if( evenOddString.equals("odd")){
+        for (int i = 0; i < odd.length; i++){
+            if (odd[i] == spin){ 
+            temp = 1;
+            }        
+        }
+       }   
+     if(spin == 0 || spin ==37){     
+     temp = 0;
+     }   
+            
+         
+        if (temp ==1){
+    return true;}
+    
+    else{ return false;}
+    
+    }  
+    
+    //returns true if the user picked the right number
+    public static boolean individualNumberBet(int spin, int numberPicked){
+    
+        if( numberPicked == spin){
+        return true;
+        }
+        
+        else{
+        return false; }
+    
+    }
+    
+    //if the user picked the right colour, awards them money. If they didn't, the method subtracts money
+    public static double validityCheckerForColourBets(boolean validity, String colour, double moneyPlayed, double budget){
+    
+    if (validity == true){
+    
+           if (colour.equals("green")){           
+           moneyPlayed = moneyPlayed*14;
+           }
+       c.println("You have won $" + moneyPlayed);
+       budget = budget + moneyPlayed;
+      }           
+         
+     if (validity ==false){
+        budget = budget - moneyPlayed;
+        c.println("You have lost $" + moneyPlayed);
+            }
+            return budget;
+        }
+  
+    
+    
+    //awards money if user picked the right option in the even/odd bet
+    public static double validityCheckerForEvenOdd(boolean validity , String evenOddString, double moneyPlayed, double budget){
+        if (validity == true){           
+                c.println("You have won $" + moneyPlayed);
+                budget = budget + moneyPlayed;
+           }
+           
+           
+         
+        if (validity ==false){
+                budget = budget - moneyPlayed;
+                c.println("You have lost $" + moneyPlayed);
+            }
+            return budget;
+        }
+        
+    //awards 35x if the user picked the right number
+    public static double individualNumberBetValidityChecker(boolean validity, double budget, double moneyPlayed){
+        if (validity == true){
+                    moneyPlayed = moneyPlayed*35;
+                    c.println("You have won $" + moneyPlayed);
+                    budget = budget + moneyPlayed;
+            }
+        if (validity == false){            
+                    c.println("You have lost $" + moneyPlayed);
+                    budget = budget - moneyPlayed;
+            }
+    
+           return budget;    
+        }
+        
+     //spinning animation that plays when user bets   
+     public static void spinnerAnimation()throws InterruptedException{
+        int x =600;
+        int y = 0;
+        int z = 620;
+        int q = 20;
+        int a = 580;
+        int b = 20;
+        int f = 600;
+        int d = 40;
+        int i = 0;
+        
+        
+        
+            while(x <= 630 && y <= 30 && i <= 8){
+            
+            Thread.sleep(400);
+            c.clear();
+            
+            
+                    c.setColor(Color.black);
+                    c.fillOval(x,y, 20,20);        
+                    x = x +10;
+                    y = y+10;  
+                      
+                    c.setColor(Color.black);
+                    c.fillOval(z,q, 20,20);               
+                    z = z-10;
+                    q = q+10;
+            
+                    c.setColor(Color.black);
+                    c.fillOval(a,b,20,20);
+                    a = a + 10;
+                    b = b - 10;
+            
+                    c.setColor(Color.black);
+                    c.fillOval(f,d,20,20);
+                    f = f-10;
+                    d = d-10;
+                
+                //this resets the circles to their original spot, so that the program doesnt end before the counter reaches 8
+                if( x ==620){
+                
+                    x =600;
+                    y = 0;
+                    z = 620;
+                    q = 20;
+                    a = 580;
+                    b = 20;
+                    f = 600;
+                    d = 40;
+        
+                    }
+                    
+              //displays the spinning... text       
+              if (i== 0 || i == 3 || i == 6){
+              c.print("Spinning.");
+              }
+              
+              if (i == 1 || i ==4 || i ==7){
+              c.print("Spinning..");
+              }
+              
+              if (i == 2 || i == 5 || i ==8 ){
+              c.print("Spinning...");
+              }
+               
+            i++;
+                }
+                c.clear();
+                }
+     
+     //tutorial on how to play , describing all the types of possible bets.
+     public static void tutorial(){
+            c.println("");
+            c.println("Roulette is a game where players place bets."); 
+            c.println("The objective is to make as much money as possible."); 
+            c.println("There are 38 possible numbers (1-36, 0 and 00).");
+            c.println("");
+            c.println("Here are all the bets you can make:");
+            c.println("+--------------------------------------------------+");
+            c.println("| Bet                    | Pays | Probability Win  |"); 
+            c.println("+--------------------------------------------------+");
+            c.println("| Red                    | 1x    | 47.36%          |");
+            c.println("+--------------------------------------------------+");
+            c.println("| Black                  | 1x    | 47.36%          |");
+            c.println("+--------------------------------------------------+");
+            c.println("| Green                  | 14x   | 5.2%            |");
+            c.println("+--------------------------------------------------+");
+            c.println("| Even                   | 1x    | 47.36%          |");
+            c.println("+--------------------------------------------------+");
+            c.println("| Odd                    | 1x    | 47.36%          |");
+            c.println("+--------------------------------------------------+");
+            c.println("| Individual Number      | 35x   | 2.6%            |");
+            c.println("+--------------------------------------------------+");
+            c.println("");
+            c.println("");
+            
+            }
+            
+} // CPT class
